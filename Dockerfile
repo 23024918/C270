@@ -3,8 +3,8 @@ FROM node:14
 # Set the working directory in the container
 WORKDIR /app
 
-# Clone the repository
-RUN git clone https://github.com/23024918/C270.git .
+# Copy local files to the container
+COPY . .
 
 # Install dependencies
 RUN npm install
