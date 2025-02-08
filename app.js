@@ -1,148 +1,89 @@
 const express = require('express');
-const mysql = require('mysql2');
 const app = express();
-
-// Create MySQL connection
-const connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'c237_supermarketapp'
-});
-
-connection.connect((err) => {
-    if (err) {
-        console.error('Error connecting to MySQL:', err);
-        return;
-    }
-    console.log('Connected to MySQL database');
-});
 
 // Set up view engine
 app.set('view engine', 'ejs');
 
-// enable static files
+// Enable static files
 app.use(express.static('public'));
 
-// enable from processing
-app.use(express.urlencoded({
-    extended: false
-}));
+// Enable form processing
+app.use(express.urlencoded({ extended: false }));
 
-// Define routes
+// In-memory storage for tasks
+let tasks = [];
+
+// Route for home page
 app.get('/', (req, res) => {
-    const sql = 'SELECT * FROM products';
-    //Fetch data from mySQL
-    connection.query( sql, (error, results) => {
-        if (error) {
-            console.error('Database query error:', error.message);
-            return res.status(500).send('Error retrieving products')
-        }
-        //Render HTML page with data
-        res.render('index', { products:results });
-    });
+  res.render('index', { task: tasks });
 });
 
-app.get('/product/:id', (req, res) => {
-    const productId = req.params.id;
-
-    // Validate product ID (assuming it's a number)
-    if (!Number.isInteger(Number(productId))) {
-        return res.status(400).send('Invalid product ID');
-    }
-
-    const sql = 'SELECT * FROM products WHERE productId = ?';
-
-    connection.query(sql, [productId], (error, results) => {
-        if (error) {
-            console.error('Database query error:', error.message);
-            return res.status(500).send('Internal Server Error');
-        }
- 
-        if (results.length > 0) {
-            res.render('product', { product: results[0] });
-        } else {
-            res.status(404).send('Product not found');
-        }
-    });
+// Route for tasks page 
+app.get('/tasks', (req, res) => {
+  res.render('task', { task: tasks }); 
 });
 
+// Retrieve one task by id
+app.get('/task/:id', (req, res) => {
+  const taskId = req.params.id;
+  const task = tasks.find(t => t.id === parseInt(taskId));
 
-app.get('/addProduct', (req, res) => {
-    res.render('addProduct');
+  if (task) {
+    res.render('task', { task });
+  } else {
+    res.status(404).send('Task not found');
+  }
 });
 
-app.post('/addProduct', (req, res) => {
-    // Extract product data from the request body
-    const {name, quantity, price, image} = req.body;
-    const sql = 'INSERT INTO products (productName, quantity, price, image) VALUES (?, ?, ?, ?)';
-    //Insert the new product into the database
-    connection.query( sql , [name, quantity, price, image], (error, results) => {
-        if (error) {
-            // Handle any errors that occur during the database operation
-            console.error('Error adding product:', error);
-            res.status(500).send('Error adding product');
-        } else {
-            // Send a success response
-            res.redirect('/');
-        }
-    });
+// Add task
+app.get('/addTask', (req, res) => {
+  res.render('addTask');
 });
 
-app.get('/editProduct/:id', (req,res) => {
-    const productId = req.params.id;
-    const sql = 'SELECT * FROM products WHERE productId = ?';
-    // Fetch data from MySQL based on the product ID
-    connection.query( sql , [productId], (error, results) => {
-        if (error) {
-            console.error('Database query error:', error.message);
-            return res.status(500).send('Error retrieving product by ID');
-        }
-        // Check if any product with the given ID was found
-        if (results.length > 0) {
-            // Render HTML page with the product data
-            res.render('editProduct', { product: results[0] });
-        } else {
-            // If no product with the given ID was found, render a 404 page or handle it accordingly
-            res.status(404).send('Product not found');
-        }
-    });
+app.post('/addTask', (req, res) => {
+  const { tasks: taskName, priority, deadline } = req.body;
+
+  // Generate a unique ID (you can use a more robust ID generation method)
+  const id = tasks.length + 1; 
+
+  const newTask = { id, taskName, priority, deadline };
+  tasks.push(newTask);
+
+  res.redirect('/');
 });
 
-app.post('/editProduct/:id', (req, res) => {
-    const productId = req.params.id;
-    // Extract product data from the request body
-    const { name, quantity, price } = req.body;
- 
-    const sql = 'UPDATE products SET productName = ? , quantity = ?, price = ? WHERE productId = ?';
- 
-    // Insert the new product into the database
-    connection.query( sql , [name, quantity, price, productId], (error, results) => {
-        if (error) {
-            // Handle any error that occurs during the database operation
-            console.error("Error updating product:", error);
-            res.status(500).send('Error updating product');
-        } else {
-            // Send a success response
-            res.redirect('/');
-        }
-    });
+// Edit task
+app.get('/editTask/:id', (req, res) => {
+  const taskId = req.params.id;
+  const task = tasks.find(t => t.id === parseInt(taskId));
+
+  if (task) {
+    res.render('editTask', { task });
+  } else {
+    res.status(404).send('Task not found');
+  }
 });
 
-app.get('/deleteProduct/:id', (req, res) => {
-    const productId = req.params.id;
-    const sql = 'DELETE FROM products WHERE productId = ?';
-    connection.query( sql , [productId], (error, results) => {
-        if (error) {
-            // Handle any error that occurs during the database operation
-            console.error("Error deleting product:", error);
-            res.status(500).send('Error deleting product');
-        } else {
-            // Send a success response
-            res.redirect('/');
-        }
-    });
+app.post('/editTask/:id', (req, res) => {
+  const taskId = req.params.id;
+  const { taskName, priority, deadline } = req.body;
+
+  const index = tasks.findIndex(t => t.id === parseInt(taskId));
+
+  if (index !== -1) {
+    tasks[index] = { id: taskId, taskName, priority, deadline }; 
+    res.redirect('/');
+  } else {
+    res.status(404).send('Task not found');
+  }
+});
+
+// Delete task
+app.get('/deleteTask/:id', (req, res) => {
+  const taskId = req.params.id;
+  tasks = tasks.filter(t => t.id !== parseInt(taskId)); 
+  res.redirect('/');
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
