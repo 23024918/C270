@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node app.js",
-    "test": "python -m unittest test_todolist_app.py"
+    "test": "python -m unittest discover -s . -p 'test_todolist_app.py'"
   },
   "keywords": [],
   "author": "",
