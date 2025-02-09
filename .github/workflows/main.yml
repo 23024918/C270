@@ -47,13 +47,10 @@ jobs:
         run: docker push c270_app:latest
 
       - name: Deploy to Docker Swarm
-        uses: garygrossgarten/github-action-ssh@v0.1.1
+        uses: appleboy/ssh-action@v0.1.9
         with:
-          command: |
-            docker stack deploy --compose-file docker-compose.yml c270-stack
           host: ${{ secrets.SWARM_HOST }}
           username: ${{ secrets.SWARM_USERNAME }}
-          privateKey: ${{ secrets.SWARM_PRIVATE_KEY }}
-
-  
-
+          key: ${{ secrets.SWARM_PRIVATE_KEY }}
+          script: |
+            docker stack deploy --compose-file docker-compose.yml c270-stack
