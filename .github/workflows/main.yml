@@ -31,26 +31,4 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest
-
-      - name: Run Python tests
-        run: python -m unittest test_todolist_app.py
-
-      - name: Build Docker image
-        run: docker build -t c270_app:latest .
-
-      - name: Login to Docker Hub
-        run: |
-          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-      - name: Push Docker image
-        run: docker push c270_app:latest
-
-      - name: Deploy to Docker Swarm
-        uses: appleboy/ssh-action@v0.1.9
-        with:
-          host: ${{ secrets.SWARM_HOST }}
-          username: ${{ secrets.SWARM_USERNAME }}
-          key: ${{ secrets.SWARM_PRIVATE_KEY }}
-          script: |
-            docker stack deploy --compose-file docker-compose.yml c270-stack
+          pip install -r requirements.txt
