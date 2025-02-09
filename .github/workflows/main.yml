@@ -34,7 +34,7 @@ jobs:
           pip install pytest
 
       - name: Run Python tests
-        run: pytest
+        run: python -m unittest test_todolist_app.py
 
       - name: Build Docker image
         run: docker build -t c270_app:latest .
