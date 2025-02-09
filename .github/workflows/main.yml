@@ -17,7 +17,7 @@ jobs:
         run: echo 654321devops | docker login -u dhiveya --password-stdin
 
       - name: Build Docker image
-        run: docker build . -t c270_app .
+        run: docker build -t c270_app .
 
       - name: Push Docker image
         run: docker push dhiveya/c270_app
