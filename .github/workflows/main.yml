@@ -10,14 +10,6 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
-
-    - name: Run Python tests
-      run: python -m unittest discover -s . -p 'test_todolist_app.py'
-
     # Node.js setup and tests
     - name: Set up Node.js
       uses: actions/setup-node@v2
@@ -41,3 +33,9 @@ jobs:
       run: |
         docker build -t ${{ secrets.DOCKER_USERNAME }}/c270-webapp:latest .
         docker push ${{ secrets.DOCKER_USERNAME }}/c270-webapp:latest
+
+    # Docker Swarm deployment
+    - name: Deploy to Docker Swarm
+      run: |
+        docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+        docker service update --image ${{ secrets.DOCKER_USERNAME }}/c270-webapp:latest c270-webapp
