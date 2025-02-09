@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "python -m unittest test_todolist_app.py"
   },
   "keywords": [],
   "author": "",
