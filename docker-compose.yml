@@ -9,4 +9,4 @@ services:
       replicas: 2  # Number of replicas for load balancing.
       placement:
         constraints:
-          - node.role == manager
+          - node.role == manager 
